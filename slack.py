@@ -57,21 +57,30 @@ class SlackBot:
           for message in sorted_ret:
             m = {
               'type': 'MSG',
-<<<<<<< HEAD
-              'sender': self.userlist[message['user']]
-              'channel': self.channels[channel],
-              'text': message['text'],
-=======
               'sender': self.userlist[message['user']],
               'channel': self.channels[channel],
               'text': message['text']
->>>>>>> 01c54b61b9b276cd21fbcebdcc8ed256475c5b75
             }
             self.to_discord.put(m)
         else:
           print("no new messages")
         time.sleep(1)
 
+    def receiver(self):
+      while(True):
+         msg = self.from_discord.get(block=True)
+         if msg["type"] == "MSG":
+                print(f"Received from discord to {msg['channel']}: {msg['text']}")
+                # Forward it to the slack workplace
+                self.sc.api_call(
+                  "chat.postMessage",
+                  channel=msg["channel"],
+                  text=msg["text"],
+                  as_user=False,
+                  username=msg["sender"]
+                )
+
     def run(self):
       self.send_channels()
       self.start_listeners()
+      threading.Thread(target=self.reciever)
