@@ -32,6 +32,17 @@ class DiscordClient(discord.Client):
         })
 
     @asyncio.coroutine
+    def on_reaction_add(self, reaction, user):
+        print(f"React received from discord: {reaction}")
+        self.to_slack.put({
+            "type": "RCT",
+            "sender": "ConnorZapfel",
+            "channel": reaction.message.channel.name,
+            "name": str(reaction.emoji),
+            "msg": reaction.message.content
+        })
+
+    @asyncio.coroutine
     def on_ready(self):
         print('------')
         print('Logged in as')
