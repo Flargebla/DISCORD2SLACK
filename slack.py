@@ -51,14 +51,14 @@ class SlackBot:
             "channels.history",
             channel=channel,
           )
-        if(len(ret['messages']) > 0):
+        if(len(ret.get('messages', False)):
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
             m = {
               'type': 'MSG',
-              'sender': self.userlist[message['user']],
-              'channel': self.channels[channel],
+              'sender': self.userlist[message['user']]
+              'channel': self.channels[channel]
               'text': message['text']
             }
             self.to_discord.put(m)
