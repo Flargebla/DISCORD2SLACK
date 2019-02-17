@@ -24,7 +24,7 @@ class SlackBot:
         _users = self.sc.api_call("users.list")
         self.userlist = {user["id"]: user["name"] for user in _users['members']}
 
-        self._username = None;
+        self.bot_username = None;
 
         self.parents = dict()
 
@@ -63,16 +63,17 @@ class SlackBot:
         message['thread'] = [obj for obj in self.parents[message['thread_ts']]]
         self.parents[message['thread_ts']].append({'sender': sender, 'text': message['text']})
 
-      m = {
-        'sender': sender,
-        'type': 'MSG',
-        'channel': self.channels[channel],
-        'text': message['text'],
-        'reactions': message.get('reactions', []),
-        'thread': message.get('thread', [])
-      }
+      if (sender != self.bot_username):
+        m = {
+          'sender': sender,
+          'type': 'MSG',
+          'channel': self.channels[channel],
+          'text': message['text'],
+          'reactions': message.get('reactions', []),
+          'thread': message.get('thread', [])
+        }
 
-      self.to_discord.put(m)
+        self.to_discord.put(m)
 
 
     def react_listener(self):
@@ -142,10 +143,6 @@ class SlackBot:
         msg = self.from_discord.get(block=True)
         if msg["type"] == "MSG":
           print(f"Received from discord to {msg['channel']}: {msg['text']}")
-          # Forward it to the slack workplace
-          print(f"Sending - CHANNEL: {msg['channel']}")
-          print(f"Sending - TEXT: {msg['text']}")
-          print(f"Sending - SENDER: {msg['sender']}")
           send = self.sc.api_call("chat.postMessage",
                                    channel=msg["channel"],
                                    text=msg["text"],
@@ -153,7 +150,7 @@ class SlackBot:
                                    username=msg["sender"])
           pprint(send)
         elif msg["type"] == "CONF":
-          self._username = msg['discord_user']
+          self.bot_username = msg['discord_user']
         elif msg["type"] == "RCT":
           # Grab channel history
           history = self.sc.api_call("channels.history", channel=msg['channel'])
