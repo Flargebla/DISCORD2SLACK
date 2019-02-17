@@ -61,14 +61,21 @@ class DiscordClient(discord.Client):
                 print(f"Available Channels: {self.channels.keys()}")
                 # Forward it to the discord server
                 if msg["channel"] in self.channels.keys() and msg['text'] != "":
-                    yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
-                    m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
-                    # Add reactions
-                    for r in msg['reactions']:
-                        for i in range(r['count']):
-                            uni_emoji = emojize(f":{r['name']}:", use_aliases=True)
-                            print(f"Adding reaction: {uni_emoji}")
-                            yield from self.add_reaction(m, uni_emoji)
+                    if len(msg["thread"]) > 0:
+                        # Add threads
+                        i = 0
+                        for t in msg["thread"]:
+                            yield from self.send_message(self.channels[msg["channel"]], f"{'|  '*i}{t['text']} (**{t['sender']}**)")
+                            i += 1
+                    else:
+                        yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
+                        m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
+                        # Add reactions
+                        for r in msg['reactions']:
+                            for i in range(r['count']):
+                                uni_emoji = emojize(f":{r['name']}:", use_aliases=True)
+                                print(f"Adding reaction: {uni_emoji}")
+                                yield from self.add_reaction(m, uni_emoji)
                 else:
                     print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
@@ -83,3 +90,5 @@ class DiscordClient(discord.Client):
                 print(f"Discovered channels: {[c for c in self.get_all_channels()]}")
                 for ch in [c for c in self.get_all_channels()]:
                     self.channels[ch.name] = ch
+            elif msg["type"] == "RCT":
+                print(f"Received RCT from Slack: {msg}")
