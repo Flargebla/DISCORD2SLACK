@@ -24,7 +24,7 @@ t = threading.Thread(target=dc.run, args=(TOKEN,))
 t.start()
 
 # Run the SlackClient
-s = threading.Thread(target=sc.listener)
+s = threading.Thread(target=sc.run)
 s.start()
 
 #time.sleep(5)
