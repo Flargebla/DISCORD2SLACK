@@ -47,20 +47,17 @@ class SlackBot:
               rusername = self.userlist.get(user)
               reaction['users'].remove(user)
               reaction['users'].append(rusername)
-      thread_parents = {}
-      if 'replies' in message:
-        thread_parents[message['thread_ts']] = message['text']
-      if 'parent_user_id' in message:
-        message['parent_text'] = thread_parents[message['thread_ts']]
       m = {
         'type': 'MSG',
         'channel': self.channels[channel],
         'text': message['text'],
         'reactions': message.get('reactions', [])
       }
+
       if "user" in message:
         m['sender'] = self.userlist[message.get('user')]
         self.to_discord.put(m)
+
       elif "username" in message and message.get('username') != self._username:
         m['sender'] = message.get('username')
         self.to_discord.put(m)
