@@ -50,17 +50,26 @@ class SlackBot:
             "channels.history",
             channel=channel,
           )
-        if(ret.get('messages', False)):
+        if(ret.get('messages')):
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
-            m = {
-              'type': 'MSG',
-              'sender': self.userlist[message['user']],
-              'channel': self.channels[channel],
-              'text': message['text']
-            }
-            self.to_discord.put(m)
+            if(message.get('user', False))
+              m = {
+                'type': 'MSG',
+                'sender': self.userlist[message.get('user')],
+                'channel': self.channels[channel],
+                'text': message['text']
+              }
+              self.to_discord.put(m)
+            if(message.get('username')):
+                m = {
+                'type': 'MSG',
+                'sender': self.userlist[message.get('username')],
+                'channel': self.channels[channel],
+                'text': message['text']
+              }
+              self.to_discord.put(m)
         else:
           #print("No new messages detected")
           continue
