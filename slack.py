@@ -10,18 +10,19 @@ class SlackBot:
     def __init__(self, from_discord, to_discord):
         # init client
         self.slack_token = os.environ.get("SLACK_API_TOKEN")
-        self.sc = SlackClient(slack_token)
+        self.sc = SlackClient(self.slack_token)
 
         # Store queues
         self.from_discord = from_discord
         self.to_discord = to_discord
 
         # establish channel dict from api
-        _channels = sc.api_call("channels.list")
+        _channels = self.sc.api_call("channels.list")
         self.channels = {channel["id"]: channel["name"] for channel in _channels["channels"]}
         
         # initialize user dict from api
-        _users = sc.api_call("users.list")
+        _users = self.sc.api_call("users.list")
+        print(_users.keys())
         self.userlist = {user["id"]: user["name"] for user in _users['members']}
 
 
@@ -34,20 +35,20 @@ class SlackBot:
     
     def start_listeners(self):
       for k, v in self.channels.items():
-        t = threading.Thread(target=self.channel_listener, args=(k,)
+        t = threading.Thread(target=self.channel_listener, args=(k,))
         t.start()
 
     def channel_listener(self, channel):
       last_ts = None
       while(True):
         if (last_ts):
-          ret = sc.api_call(
+          ret = self.sc.api_call(
             "channels.history",
             channel=channel,
             oldest=last_ts,
           )
         else:
-          ret = sc.api_call(
+          ret = self.sc.api_call(
             "channels.history",
             channel=channel,
           )
@@ -57,8 +58,8 @@ class SlackBot:
           for message in ret['messages']:
             m = {
               'type': 'MSG',
-              'sender': self.userlist[message['user']]
-              'channel': self.channels[channel]
+              'sender': self.userlist[message['user']],
+              'channel': self.channels[channel],
               'text': message['text']
             }
             self.to_discord.put(m)
