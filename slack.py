@@ -24,6 +24,8 @@ class SlackBot:
         _users = self.sc.api_call("users.list")
         self.userlist = {user["id"]: user["name"] for user in _users['members']}
 
+        self._username = None;
+
 
     def send_channels(self):
       channels = [v for k,v in self.channels.items()]
@@ -62,7 +64,7 @@ class SlackBot:
                 'text': message['text']
               }
               self.to_discord.put(m)
-            elif "username" in message:
+            elif "username" in message and message.get('username') != self._username:
               m = {
                 'type': 'MSG',
                 'sender': message.get('username'),
@@ -76,8 +78,8 @@ class SlackBot:
 
     def receiver(self):
       while(True):
-         msg = self.from_discord.get(block=True)
-         if msg["type"] == "MSG":
+        msg = self.from_discord.get(block=True)
+          if msg["type"] == "MSG":
                 print(f"Received from discord to {msg['channel']}: {msg['text']}")
                 # Forward it to the slack workplace
                 print(f"Sending - CHANNEL: {msg['channel']}")
@@ -91,6 +93,8 @@ class SlackBot:
                   username=msg["sender"]
                 )
                 pprint(send)
+          if msg["type"] == "CONF":
+              self._username = msg['discord_user']
 
     def run(self):
       self.send_channels()
