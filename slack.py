@@ -28,6 +28,8 @@ class SlackBot:
 
         self.parents = dict()
 
+        self.history = list()
+
 
     def send_channels(self):
       channels = [v for k,v in self.channels.items()]
@@ -128,6 +130,7 @@ class SlackBot:
             channel=channel,
           )
         if(ret.get('messages')):
+          self.history = ret.get("messages") + self.history
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
@@ -148,28 +151,30 @@ class SlackBot:
                                    text=msg["text"],
                                    as_user=False,
                                    username=msg["sender"])
-          pprint(send)
         elif msg["type"] == "CONF":
           self.bot_username = msg['discord_user']
         elif msg["type"] == "RCT":
           # Grab channel history
-          history = self.sc.api_call("channels.history", channel=msg['channel'])
-          if "messages" in history:
-            # Find the TS of the most recent msg matching msg['text']
-            ts = None
-            for m in sorted(history['messages'],
-                            key=itemgetter('ts'),
-                            reverse=True):
-                if m['text'] == msg['text']:
-                  ts = m['ts']
-            # Make sure we found a message 
-            if ts is not None:
-              self.sc.api_call("reactions.add",
-                                name=msg['name'],
-                                channel=msg['channel'],
-                                timestamp=ts)
+          #history = self.sc.api_call("channels.history", channel=msg['channel'])
+          history = [x for x in self.history]
+          ts = None
+          sorted_hist = sorted(history, key=itemgetter('ts'), reverse=True)
+          for m in sorted_hist:
+            if m['text'] == msg['text']:
+              ts = m['ts']
+              break
+          # Make sure we found a message 
+          if ts is not None:
+            print("Found Slack message for:")
+            pprint(msg)
+            rev_chans = {v:k for k, v in self.channels.items()}
+            ret = self.sc.api_call("reactions.add",
+                              name=msg['name'][1:-1],
+                              channel=rev_chans[msg['channel']],
+                              timestamp=ts)
+            pprint(ret)
           else:
-            print(f"ERROR - No message found with: {msg['text']}")
+            pprint(history['messages'])
 
 
     def run(self):

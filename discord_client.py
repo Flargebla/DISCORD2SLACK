@@ -3,7 +3,7 @@ import threading
 import asyncio
 import json
 import time
-from emoji import emojize
+from emoji import emojize, demojize
 
 class DiscordClient(discord.Client):
 
@@ -38,7 +38,7 @@ class DiscordClient(discord.Client):
             "type": "RCT",
             "sender": "ConnorZapfel",
             "channel": reaction.message.channel.name,
-            "name": str(reaction.emoji),
+            "name": demojize(reaction.emoji),
             "text": reaction.message.content
         })
 
@@ -84,6 +84,7 @@ class DiscordClient(discord.Client):
                         yield from self.send_message(self.channels[msg["channel"]], msg_str)
                     else:
                         yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
+                        yield from asyncio.sleep(1)
                         m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
                         # Add reactions
                         for r in msg['reactions']:
