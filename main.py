@@ -1,17 +1,17 @@
 from discord_client import DiscordClient
 from slack import SlackBot
+from queue import Queue
 import time
 import json
 import os
 import threading
-import asyncio
 
 # The Discord token
 TOKEN = os.environ["DISCORD_API_TOKEN"]
 
 # Create the two messaging Queues
-d2sl = asyncio.Queue()
-sl2d = asyncio.Queue()
+d2sl = Queue()
+sl2d = Queue()
 
 # Create the Discord Client
 dc = DiscordClient(d2sl, sl2d)

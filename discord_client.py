@@ -36,8 +36,8 @@ class DiscordClient(discord.Client):
         print('Logged in as')
         print("User:\t" + self.user.name)
         print("ID:\t" + self.user.id)
-        print("SEVER:\t" + self.server)
         self.server = [x for x in self.servers][0]
+        print("SERVER:\t" + str(self.server))
         print('------')
         while True:
             # Wait for a message
