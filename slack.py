@@ -22,11 +22,10 @@ class SlackBot:
         
         # initialize user dict from api
         _users = self.sc.api_call("users.list")
-        print(_users.keys())
         self.userlist = {user["id"]: user["name"] for user in _users['members']}
 
 
-    def config(self):
+    def send_channels(self):
       channels = [v for k,v in self.channels.items()]
       self.to_discord.put({
         'type': 'CONF',
@@ -35,10 +34,10 @@ class SlackBot:
     
     def start_listeners(self):
       for k, v in self.channels.items():
-        t = threading.Thread(target=self.channel_listener, args=(k,))
-        t.start()
+        threading.Thread(target=self.channel_listener, args=(k,)).start()
 
     def channel_listener(self, channel):
+      print(f"Starting channel listener for: {channel}")
       last_ts = None
       while(True):
         if (last_ts):
@@ -53,7 +52,6 @@ class SlackBot:
             channel=channel,
           )
         if(len(ret['messages']) > 0):
-          print(ret)
           last_ts = sorted(ret['messages'], key=itemgetter('ts'))[-1]['ts']
           for message in ret['messages']:
             m = {

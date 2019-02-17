@@ -34,17 +34,16 @@ class DiscordClient(discord.Client):
         while True:
             # Wait for a message
             msg = self.from_slack.get(block=True)
-            # Parse to JSON
-            jmsg = json.loads(msg)
             # Check the message type
-            if jmsg["type"] == "MSG":
+            if msg["type"] == "MSG":
                 print(f"Received from slack: {msg}")
+                print(f"Available Chanels: {self.channels}")
                 # Forward it to the discord server
-                yield from self.send_message(self.channels[jmsg["channel"]], f"{jmsg['sender']}: {jmsg['text']}")
-            elif jmsg["type"] == "CONF":
+                yield from self.send_message(self.channels[msg["channel"]], f"{msg['sender']}: {msg['text']}")
+            elif msg["type"] == "CONF":
                 # Create all the channels
-                for ch_name in jmsg["channels"]:
+                for ch_name in msg["channels"]:
                     yield from self.create_channel(self.server, ch_name)
                 # Store then channel mapping
-                for ch in [c for c in self.server.get_all_channels()]:
+                for ch in [c for c in self.get_all_channels()]:
                     self.channels[ch.name] = ch
