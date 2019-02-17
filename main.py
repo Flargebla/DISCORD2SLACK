@@ -15,12 +15,15 @@ sl2d = Queue()
 dc = DiscordClient(d2sl, sl2d)
 
 # Create the Slack Client
+sc = SlackBot(d2sl, sl2d)
 
 # Run the DiscordClient
 t = threading.Thread(target=dc.run, args=(TOKEN,))
 t.start()
 
 # Run the SlackClient
+s = threading.Thread(target=sc.listener)
+s.start()
 
 #time.sleep(5)
 #print("Sending from slack")
