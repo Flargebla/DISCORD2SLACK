@@ -59,8 +59,12 @@ class DiscordClient(discord.Client):
                 print(f"Received from slack to {msg['channel']}: {msg['text']}")
                 print(f"Available Channels: {self.channels.keys()}")
                 # Forward it to the discord server
-                if msg["channel"] in self.channels.keys():
-                    yield from self.send_message(self.channels[msg["channel"]], f"{msg['sender']}: {msg['text']}")
+                if msg["channel"] in self.channels.keys() and msg['text'] != "":
+                    yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
+                    yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
+                    #yield from self.edit_profile(username=msg['sender'])
+                    #yield from asyncio.sleep(1)
+                    #yield from self.send_message(self.channels[msg['channel']], msg['text'])
                 else:
                     print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
