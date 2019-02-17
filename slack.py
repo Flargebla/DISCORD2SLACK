@@ -56,6 +56,12 @@ class SlackBot:
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
+            if 'reactions' in message:
+              for reaction in message['reactions']:
+                for user in reaction['users']:
+                  rusername = self.userlist.get(user)
+                  reaction['users'].remove(user)
+                  reaction['users'].append(rusername)
             if "user" in message:
               m = {
                 'type': 'MSG',
