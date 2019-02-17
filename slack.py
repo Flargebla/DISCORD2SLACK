@@ -59,7 +59,8 @@ class SlackBot:
         'type': 'MSG',
         'channel': self.channels[channel],
         'text': message['text'],
-        'reactions': message.get('reactions', [])
+        'reactions': message.get('reactions', []),
+        'thread': message.get('thread', [])
       }
 
       if "user" in message:
