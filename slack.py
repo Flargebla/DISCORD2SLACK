@@ -76,7 +76,7 @@ class SlackBot:
         }
         
         if 'files' in message:
-          m['image'] = message['files'][0]['permalink_public']
+          m['img'] = message['files'][0]['permalink_public']
 
         self.to_discord.put(m)
 
@@ -150,30 +150,28 @@ class SlackBot:
         msg = self.from_discord.get(block=True)
         if msg["type"] == "MSG":
           print(f"Received from discord to {msg['channel']}: {msg['text']}")
-          if 'image' in msg:
+          if msg["img"] != "":
+            #pprint(msg)
             block=[{
               "type": "image",
-              "title": {
-                "type": "plain_text",
-                "text": "Image sent from discord"
-              },
-              "block_id": "discordImage",
-              "image_url": image
+              "image_url": msg['img'],
+              "alt_text": "An image"
             }]
             send = self.sc.api_call(
               "chat.postMessage",
               channel=msg['channel'],
               text=msg["text"],
               blocks=block)
+            pprint(send)
           else:
             send = self.sc.api_call("chat.postMessage",
                                     channel=msg["channel"],
                                     text=msg["text"],
                                     as_user=False,
                                     username=msg["sender"])
-          elif msg["type"] == "CONF":
+        elif msg["type"] == "CONF":
             self.bot_username = msg['discord_user']
-          elif msg["type"] == "RCT":
+        elif msg["type"] == "RCT":
             # Grab channel history
             #history = self.sc.api_call("channels.history", channel=msg['channel'])
             history = [x for x in self.history]

@@ -93,7 +93,7 @@ class DiscordClient(discord.Client):
                     # Otherwise its just a normal message
                     else:
                         # Check for img
-                        if len(message.attachments) > 0:
+                        if msg["img"] != "":
                             # Grab the remote image
                             rint = str(random.randint(0,9999999))
                             r = requests.get(msg["img"])
