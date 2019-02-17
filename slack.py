@@ -58,8 +58,8 @@ class SlackBot:
           for message in sorted_ret:
             m = {
               'type': 'MSG',
-              'sender': self.userlist[message['user']]
-              'channel': self.channels[channel]
+              'sender': self.userlist[message['user']],
+              'channel': self.channels[channel],
               'text': message['text']
             }
             self.to_discord.put(m)
