@@ -56,13 +56,13 @@ class SlackBot:
               rusername = self.userlist.get(user)
               reaction['users'].remove(user)
               reaction['users'].append(rusername)
-      
-      if 'parent_user_id' not in message:
+
+      if 'thread_ts' not in message or 'replies' in message:
         self.parents[message['ts']] = [{'sender': sender, 'text': message['text']}]
       else:
         message['thread'] = [obj for obj in self.parents[message['thread_ts']]]
         self.parents[message['thread_ts']].append({'sender': sender, 'text': message['text']})
-
+      
       if (sender != self.bot_username):
         m = {
           'sender': sender,
