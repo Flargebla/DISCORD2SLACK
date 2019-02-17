@@ -72,8 +72,11 @@ class SlackBot:
           'channel': self.channels[channel],
           'text': message['text'],
           'reactions': message.get('reactions', []),
-          'thread': message.get('thread', [])
+          'thread': message.get('thread', []),
         }
+        
+        if 'files' in message:
+          m['image'] = message['files'][0]['permalink_public']
 
         self.to_discord.put(m)
 
@@ -147,35 +150,49 @@ class SlackBot:
         msg = self.from_discord.get(block=True)
         if msg["type"] == "MSG":
           print(f"Received from discord to {msg['channel']}: {msg['text']}")
-          send = self.sc.api_call("chat.postMessage",
-                                   channel=msg["channel"],
-                                   text=msg["text"],
-                                   as_user=False,
-                                   username=msg["sender"])
-        elif msg["type"] == "CONF":
-          self.bot_username = msg['discord_user']
-        elif msg["type"] == "RCT":
-          # Grab channel history
-          #history = self.sc.api_call("channels.history", channel=msg['channel'])
-          history = [x for x in self.history]
-          ts = None
-          sorted_hist = sorted(history, key=itemgetter('ts'), reverse=True)
-          for m in sorted_hist:
-            if m['text'] == msg['text']:
-              ts = m['ts']
-              break
-          # Make sure we found a message 
-          if ts is not None:
-            print("Found Slack message for:")
-            pprint(msg)
-            rev_chans = {v:k for k, v in self.channels.items()}
-            ret = self.sc.api_call("reactions.add",
-                              name=msg['name'][1:-1],
-                              channel=rev_chans[msg['channel']],
-                              timestamp=ts)
-            pprint(ret)
+          if 'image' in msg:
+            block=[{
+              "type": "image",
+              "title": {
+                "type": "plain_text",
+                "text": "Image sent from discord"
+              },
+              "block_id": "discordImage",
+              "image_url": image
+            }]
+            send = self.sc.api_call(
+              "chat.postMessage",
+              channel=msg['channel'],
+              text=msg["text"],
+              blocks=block)
           else:
-            pprint(history['messages'])
+            send = self.sc.api_call("chat.postMessage",
+                                    channel=msg["channel"],
+                                    text=msg["text"],
+                                    as_user=False,
+                                    username=msg["sender"])
+          elif msg["type"] == "CONF":
+            self.bot_username = msg['discord_user']
+          elif msg["type"] == "RCT":
+            # Grab channel history
+            #history = self.sc.api_call("channels.history", channel=msg['channel'])
+            history = [x for x in self.history]
+            ts = None
+            sorted_hist = sorted(history, key=itemgetter('ts'), reverse=True)
+            for m in sorted_hist:
+              if m['text'] == msg['text']:
+                ts = m['ts']
+                break
+            # Make sure we found a message 
+            if ts is not None:
+              print("Found Slack message for:")
+              rev_chans = {v:k for k, v in self.channels.items()}
+              ret = self.sc.api_call("reactions.add",
+                                      name=msg['name'][1:-1],
+                                      channel=rev_chans[msg['channel']],
+                                      timestamp=ts)
+            else:
+              pprint(history['messages'])
 
 
     def run(self):
