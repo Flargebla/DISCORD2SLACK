@@ -39,6 +39,12 @@ class DiscordClient(discord.Client):
         self.server = [x for x in self.servers][0]
         print("SERVER:\t" + str(self.server))
         print('------')
+        # Send CONF
+        self.to_slack.put({
+            "type": "CONF",
+            "discord_user": "ConnorZapfel"
+        })
+        # Listen for messages forever
         while True:
             # Wait for a message
             if self.from_slack.empty():
