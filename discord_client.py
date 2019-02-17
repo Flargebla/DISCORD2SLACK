@@ -34,9 +34,9 @@ class DiscordClient(discord.Client):
     def on_ready(self):
         print('------')
         print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
-        print([x for x in self.servers])
+        print("User:\t" + self.user.name)
+        print("ID:\t" + self.user.id)
+        print("SEVER:\t" + self.server)
         self.server = [x for x in self.servers][0]
         print('------')
         while True:
@@ -47,13 +47,19 @@ class DiscordClient(discord.Client):
                 print(f"Received from slack to {msg['channel']}: {msg['text']}")
                 print(f"Available Channels: {self.channels.keys()}")
                 # Forward it to the discord server
-                yield from self.send_message(self.channels[msg["channel"]], f"{msg['sender']}: {msg['text']}")
+                if msg["channel"] in self.channels.keys():
+                    yield from self.send_message(self.channels[msg["channel"]], f"{msg['sender']}: {msg['text']}")
+                else:
+                    print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
+                print(f"Received CONF from Slack: {msg}")
                 # Create all the channels
                 for ch_name in msg["channels"]:
+                    print(f"Creating channel: {ch_name}")
                     yield from self.create_channel(self.server, ch_name)
+                    print(f"Created channel: {ch_name}")
                 # Store then channel mapping
+                time.sleep(10)
                 print(f"Discovered channels: {[c for c in self.get_all_channels()]}")
                 for ch in [c for c in self.get_all_channels()]:
                     self.channels[ch.name] = ch
-                time.sleep(5)

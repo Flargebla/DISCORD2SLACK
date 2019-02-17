@@ -37,7 +37,6 @@ class SlackBot:
         threading.Thread(target=self.channel_listener, args=(k,)).start()
 
     def channel_listener(self, channel):
-      print(f"Starting channel listener for: {channel}")
       last_ts = None
       while(True):
         if (last_ts):
@@ -51,7 +50,7 @@ class SlackBot:
             "channels.history",
             channel=channel,
           )
-        if(len(ret.get('messages', False))):
+        if(ret.get('messages', False)):
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
@@ -63,8 +62,8 @@ class SlackBot:
             }
             self.to_discord.put(m)
         else:
-          print("no new messages")
-        time.sleep(1)
+          #print("No new messages detected")
+          continue
 
     def receiver(self):
       while(True):
@@ -72,15 +71,19 @@ class SlackBot:
          if msg["type"] == "MSG":
                 print(f"Received from discord to {msg['channel']}: {msg['text']}")
                 # Forward it to the slack workplace
-                self.sc.api_call(
+                print(f"Sending - CHANNEL: {msg['channel']}")
+                print(f"Sending - TEXT: {msg['text']}")
+                print(f"Sending - SENDER: {msg['sender']}")
+                send = self.sc.api_call(
                   "chat.postMessage",
                   channel=msg["channel"],
                   text=msg["text"],
                   as_user=False,
                   username=msg["sender"]
                 )
+                pprint(send)
 
     def run(self):
       self.send_channels()
       self.start_listeners()
-      threading.Thread(target=self.reciever)
+      threading.Thread(target=self.receiver).start()
