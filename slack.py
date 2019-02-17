@@ -34,9 +34,37 @@ class SlackBot:
         'channels': channels
       })
     
+
     def start_listeners(self):
       for k, v in self.channels.items():
         threading.Thread(target=self.channel_listener, args=(k,)).start()
+
+
+    def handle_message(self, message):
+      if 'reactions' in message:
+          for reaction in message['reactions']:
+            for user in reaction['users']:
+              rusername = self.userlist.get(user)
+              reaction['users'].remove(user)
+              reaction['users'].append(rusername)
+      thread_parents = {}
+      if 'replies' in message:
+        thread_parents[message['thread_ts']] = message['text']
+      if 'parent_user_id' in message:
+        message['parent_text'] = thread_parents[message['thread_ts']]
+      m = {
+        'type': 'MSG',
+        'channel': self.channels[channel],
+        'text': message['text'],
+        'reactions': message.get('reactions', [])
+      }
+      if "user" in message:
+        m['sender'] = self.userlist[message.get('user')]
+        self.to_discord.put(m)
+      elif "username" in message and message.get('username') != self._username:
+        m['sender'] = message.get('username')
+        self.to_discord.put(m)
+
 
     def channel_listener(self, channel):
       last_ts = None
@@ -56,33 +84,11 @@ class SlackBot:
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
-            if 'reactions' in message:
-              for reaction in message['reactions']:
-                for user in reaction['users']:
-                  rusername = self.userlist.get(user)
-                  reaction['users'].remove(user)
-                  reaction['users'].append(rusername)
-            if "user" in message:
-              m = {
-                'type': 'MSG',
-                'sender': self.userlist[message.get('user')],
-                'channel': self.channels[channel],
-                'text': message['text'],
-                'reactions': message.get('reactions', [])
-              }
-              self.to_discord.put(m)
-            elif "username" in message and message.get('username') != self._username:
-              m = {
-                'type': 'MSG',
-                'sender': message.get('username'),
-                'channel': self.channels[channel],
-                'text': message['text'],
-                'reactions': message.get('reactions', [])
-              }
-              self.to_discord.put(m)
+            self.handle_message(message)
         else:
           #print("No new messages detected")
           continue
+
 
     def receiver(self):
       while(True):
@@ -103,6 +109,7 @@ class SlackBot:
           pprint(send)
         if msg["type"] == "CONF":
           self._username = msg['discord_user']
+
 
     def run(self):
       self.send_channels()
