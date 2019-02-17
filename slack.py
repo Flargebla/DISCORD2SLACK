@@ -46,7 +46,6 @@ class SlackBot:
 
 
     def handle_message(self, message, channel):
-      pprint(message)
       if "username" not in message and "user" not in message:
         pprint(message)
         return
@@ -73,9 +72,7 @@ class SlackBot:
         'thread': message.get('thread', [])
       }
 
-
       self.to_discord.put(m)
-      pprint(self.parents)
 
 
     def react_listener(self):
