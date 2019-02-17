@@ -54,7 +54,7 @@ class SlackBot:
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
-            if(message.get('user', False))
+            if "user" in message:
               m = {
                 'type': 'MSG',
                 'sender': self.userlist[message.get('user')],
@@ -62,10 +62,10 @@ class SlackBot:
                 'text': message['text']
               }
               self.to_discord.put(m)
-            if(message.get('username')):
-                m = {
+            elif "username" in message:
+              m = {
                 'type': 'MSG',
-                'sender': self.userlist[message.get('username')],
+                'sender': message.get('username'),
                 'channel': self.channels[channel],
                 'text': message['text']
               }
