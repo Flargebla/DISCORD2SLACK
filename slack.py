@@ -73,6 +73,7 @@ class SlackBot:
         'thread': message.get('thread', [])
       }
 
+
       self.to_discord.put(m)
       pprint(self.parents)
 
