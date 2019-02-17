@@ -66,7 +66,12 @@ class SlackBot:
         self.parents[message['thread_ts']].append({'sender': sender, 'text': message['text']})
       
       if 'files' in message:
-          message['image'] = message['files'][0]['permalink_public']
+          #fid = message["files"][0]["id"]
+          #ret = self.sc.api_call("files.sharedPublicURL",
+          #                        file_id=fid)
+          #pprint(ret)
+          #message['image'] = ret["url_download"]
+          message['image'] = ret['permalink_public']
 
       if (sender != self.bot_username):
         m = {
@@ -162,6 +167,8 @@ class SlackBot:
               "chat.postMessage",
               channel=msg['channel'],
               text=msg["text"],
+              as_user=False,
+              username=msg['sender'],
               blocks=block)
             pprint(send)
           else:

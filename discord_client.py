@@ -79,7 +79,7 @@ class DiscordClient(discord.Client):
                 print(f"Received from slack to {msg['channel']}: {msg['text']}")
                 print(f"Available Channels: {self.channels.keys()}")
                 # Forward it to the discord server
-                if msg["channel"] in self.channels.keys() and msg['text'] != "":
+                if msg["channel"] in self.channels.keys():
                     # Check if msg is part of a thread
                     if len(msg["thread"]) > 0:
                         i = 0
@@ -92,8 +92,11 @@ class DiscordClient(discord.Client):
                         yield from self.send_message(self.channels[msg["channel"]], msg_str)
                     # Otherwise its just a normal message
                     else:
+                        yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
+                        yield from asyncio.sleep(1)
                         # Check for img
                         if msg["img"] != "":
+                            print(f"IMG: {msg['img']}")
                             # Grab the remote image
                             rint = str(random.randint(0,9999999))
                             r = requests.get(msg["img"])
@@ -101,11 +104,14 @@ class DiscordClient(discord.Client):
                                 with open(f"{rint}.jpg", "wb") as f:
                                     for c in r.iter_content(1024):
                                         f.write(c)
-                            yield from self.send_file(msg["channel"], f"{rint}.jpg")
+                            else:
+                                print(f"Failed to Download image from: {msg['img']}")
+                                print(r.text)
+                                print(r.status_code)
+                            yield from self.send_file(self.channels[msg["channel"]], f"{rint}.jpg")
                             yield from asyncio.sleep(1)
-                        yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
-                        yield from asyncio.sleep(1)
-                        m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
+                        if msg['text'] != "":
+                            m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
                 else:
                     print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
