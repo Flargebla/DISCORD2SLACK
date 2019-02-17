@@ -45,7 +45,7 @@ class DiscordClient(discord.Client):
             # Check the message type
             if msg["type"] == "MSG":
                 print(f"Received from slack to {msg['channel']}: {msg['text']}")
-                print(f"Available Chanels: {self.channels.keys()}")
+                print(f"Available Channels: {self.channels.keys()}")
                 # Forward it to the discord server
                 yield from self.send_message(self.channels[msg["channel"]], f"{msg['sender']}: {msg['text']}")
             elif msg["type"] == "CONF":
