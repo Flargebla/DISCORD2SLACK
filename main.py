@@ -1,6 +1,8 @@
 from discord_client import DiscordClient
+from slack import SlackBot
 from queue import Queue
 import time
+import json
 import os
 import threading
 
@@ -26,5 +28,9 @@ s = threading.Thread(target=sc.listener)
 s.start()
 
 #time.sleep(5)
-#print("Sending from slack")
-#sl2d.put("MSG FROM YABOI")
+#print("Sending slack conf")
+#jm = {
+#    "type": "CONF",
+#    "channels": ["general","duckhacks2019"]
+#}
+#sl2d.put(json.dumps(jm))
