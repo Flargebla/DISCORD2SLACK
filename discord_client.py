@@ -41,7 +41,13 @@ class DiscordClient(discord.Client):
         print('------')
         while True:
             # Wait for a message
-            msg = self.from_slack.get(block=True)
+            if self.from_slack.empty():
+                print("Sleeping...")
+                yield from asyncio.sleep(1)
+                continue
+            else:
+                print("Reading msg...")
+                msg = self.from_slack.get(block=False)
             # Check the message type
             if msg["type"] == "MSG":
                 print(f"Received from slack to {msg['channel']}: {msg['text']}")
