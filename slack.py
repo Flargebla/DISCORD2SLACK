@@ -38,12 +38,19 @@ class SlackBot:
     
 
     def start_listeners(self):
+      # Start channel listeners
       for k, v in self.channels.items():
         threading.Thread(target=self.channel_listener, args=(k,)).start()
+      # Start react listener
+      #threading.Thread(target=self.react_listener).start()
 
 
     def handle_message(self, message, channel):
-      sender = message.get('username', self.userlist[message['user']])
+      pprint(message)
+      if "username" not in message and "user" not in message:
+        pprint(message)
+        return
+      sender = message.get("username") if "username" in message else self.userlist[message.get("user")]
       if 'reactions' in message:
           for reaction in message['reactions']:
             for user in reaction['users']:
@@ -67,6 +74,44 @@ class SlackBot:
       }
 
       self.to_discord.put(m)
+      pprint(self.parents)
+
+
+    def react_listener(self):
+      last_ts = None
+      while(True):
+        # Grab the list of reacts
+        reacts = self.sc.api_call("reactions.list",
+                                  full=True)
+        # Send all reacts to Discord
+        if last_ts is None and "items" in reacts:
+          # Iterate over the reacts
+          for i in reacts["items"]:
+            for r in i['message']['reactions']:
+              self.to_discord.put({
+                "type": "RCT",
+                "sender": "",
+                "name": r['name'],
+                "text": i['message']['text']
+              })
+            # Update last_ts
+            if not last_ts or float(i['message']['ts']) > last_ts:
+              last_ts = float(i['message']['ts'])
+        # Send reacts past last_ts to Discord
+        elif "items" in reacts:
+          for i in reacts['items']:
+            if float(i['message']['ts']) > last_ts:
+              for r in i['message']['reactions']:
+                self.to_discord.put({
+                  "type": "RCT",
+                  "sender": "",
+                  "name": r['name'],
+                  "text": i['message']['text']
+                })
+              # Update last_ts
+              if not last_ts or float(i['message']['ts']) > last_ts:
+                last_ts = float(i['message']['ts'])
+      time.sleep(60)
 
 
     def channel_listener(self, channel):
@@ -91,6 +136,7 @@ class SlackBot:
         else:
           #print("No new messages detected")
           continue
+        time.sleep(3)
 
 
     def receiver(self):
@@ -110,6 +156,25 @@ class SlackBot:
           pprint(send)
         elif msg["type"] == "CONF":
           self._username = msg['discord_user']
+        elif msg["type"] == "RCT":
+          # Grab channel history
+          history = self.sc.api_call("channels.history", channel=msg['channel'])
+          if "messages" in history:
+            # Find the TS of the most recent msg matching msg['text']
+            ts = None
+            for m in sorted(history['messages'],
+                            key=itemgetter('ts'),
+                            reverse=True):
+                if m['text'] == msg['text']:
+                  ts = m['ts']
+            # Make sure we found a message 
+            if ts is not None:
+              self.sc.api_call("reactions.add",
+                                name=msg['name'],
+                                channel=msg['channel'],
+                                timestamp=ts)
+          else:
+            print(f"ERROR - No message found with: {msg['text']}")
 
 
     def run(self):

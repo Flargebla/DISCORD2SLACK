@@ -39,7 +39,7 @@ class DiscordClient(discord.Client):
             "sender": "ConnorZapfel",
             "channel": reaction.message.channel.name,
             "name": str(reaction.emoji),
-            "msg": reaction.message.content
+            "text": reaction.message.content
         })
 
     @asyncio.coroutine
