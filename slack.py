@@ -65,6 +65,9 @@ class SlackBot:
         message['thread'] = [obj for obj in self.parents[message['thread_ts']]]
         self.parents[message['thread_ts']].append({'sender': sender, 'text': message['text']})
       
+      if 'files' in message:
+          message['image'] = message['files'][0]['permalink_public']
+
       if (sender != self.bot_username):
         m = {
           'sender': sender,
@@ -73,10 +76,8 @@ class SlackBot:
           'text': message['text'],
           'reactions': message.get('reactions', []),
           'thread': message.get('thread', []),
+          'img': message.get('image', "")
         }
-        
-        if 'files' in message:
-          m['image'] = message['files'][0]['permalink_public']
 
         self.to_discord.put(m)
 
