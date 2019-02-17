@@ -22,6 +22,13 @@ class DiscordClient(discord.Client):
         if message.author == self.user:
             return
         print(f"Message received from discord: {message.content}")
+        # Send the message to the Slack
+        self.to_slack.put({
+            "type": "MSG",
+            "sender": "ConnorZapfel",
+            "channel": str(message.channel),
+            "text": message.content
+        })
 
     @asyncio.coroutine
     def on_ready(self):
