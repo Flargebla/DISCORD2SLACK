@@ -40,7 +40,7 @@ class DiscordClient(discord.Client):
             if jmsg["type"] == "MSG":
                 print(f"Received from slack: {msg}")
                 # Forward it to the discord server
-                yield from self.send_message(self.channels[jmsg["channel"]], f"{jmsg["sender"]}: {jmsg["text"]}")
+                yield from self.send_message(self.channels[jmsg["channel"]], f"{jmsg['sender']}: {jmsg['text']}")
             elif jmsg["type"] == "CONF":
                 # Create all the channels
                 for ch_name in jmsg["channels"]:
