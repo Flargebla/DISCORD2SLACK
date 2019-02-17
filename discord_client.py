@@ -3,6 +3,7 @@ import threading
 import asyncio
 import json
 import time
+from emoji import emojize
 
 class DiscordClient(discord.Client):
 
@@ -61,10 +62,13 @@ class DiscordClient(discord.Client):
                 # Forward it to the discord server
                 if msg["channel"] in self.channels.keys() and msg['text'] != "":
                     yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
-                    yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
-                    #yield from self.edit_profile(username=msg['sender'])
-                    #yield from asyncio.sleep(1)
-                    #yield from self.send_message(self.channels[msg['channel']], msg['text'])
+                    m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
+                    # Add reactions
+                    for r in msg['reactions']:
+                        for i in range(r['count']):
+                            uni_emoji = emojize(f":{r['name']}:", use_aliases=True)
+                            print(f"Adding reaction: {uni_emoji}")
+                            yield from self.add_reaction(m, uni_emoji)
                 else:
                     print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
