@@ -96,18 +96,16 @@ class SlackBot:
         if msg["type"] == "MSG":
           print(f"Received from discord to {msg['channel']}: {msg['text']}")
           # Forward it to the slack workplace
-          prin(f"Sending - CHANNEL: {msg['channel']}")
+          print(f"Sending - CHANNEL: {msg['channel']}")
           print(f"Sending - TEXT: {msg['text']}")
           print(f"Sending - SENDER: {msg['sender']}")
-          send = self.sc.api_call(
-            "chat.postMessage",
-            channel=msg["channel"],
-            text=msg["text"],
-            as_user=False,
-            username=msg["sender"]
-          )
+          send = self.sc.api_call("chat.postMessage",
+                                   channel=msg["channel"],
+                                   text=msg["text"],
+                                   as_user=False,
+                                   username=msg["sender"])
           pprint(send)
-        if msg["type"] == "CONF":
+        elif msg["type"] == "CONF":
           self._username = msg['discord_user']
 
 
