@@ -44,7 +44,7 @@ class SlackBot:
       for k, v in self.channels.items():
         threading.Thread(target=self.channel_listener, args=(k,)).start()
       # Start react listener
-      #threading.Thread(target=self.react_listener).start()
+      threading.Thread(target=self.react_listener).start()
 
 
     def handle_message(self, message, channel):
@@ -79,6 +79,7 @@ class SlackBot:
 
 
     def react_listener(self):
+      time.sleep(10)
       last_ts = None
       while(True):
         # Grab the list of reacts
@@ -112,7 +113,7 @@ class SlackBot:
               # Update last_ts
               if not last_ts or float(i['message']['ts']) > last_ts:
                 last_ts = float(i['message']['ts'])
-      time.sleep(60)
+        time.sleep(3)
 
 
     def channel_listener(self, channel):

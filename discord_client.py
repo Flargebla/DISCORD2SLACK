@@ -3,6 +3,7 @@ import threading
 import asyncio
 import json
 import time
+import copy
 from emoji import emojize, demojize
 
 class DiscordClient(discord.Client):
@@ -87,11 +88,11 @@ class DiscordClient(discord.Client):
                         yield from asyncio.sleep(1)
                         m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
                         # Add reactions
-                        for r in msg['reactions']:
-                            for i in range(r['count']):
-                                uni_emoji = emojize(f":{r['name']}:", use_aliases=True)
-                                print(f"Adding reaction: {uni_emoji}")
-                                yield from self.add_reaction(m, uni_emoji)
+                        #for r in msg['reactions']:
+                        #    for i in range(r['count']):
+                        #        uni_emoji = emojize(f":{r['name']}:", use_aliases=True)
+                        #        print(f"Adding reaction: {uni_emoji}")
+                        #        yield from self.add_reaction(m, uni_emoji)
                 else:
                     print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
@@ -108,3 +109,10 @@ class DiscordClient(discord.Client):
                     self.channels[ch.name] = ch
             elif msg["type"] == "RCT":
                 print(f"Received RCT from Slack: {msg}")
+                # Grab a copy of the message deque
+                msgs = copy.deepcopy(self.messages)
+                for m in msgs:
+                    if m.content == msg['text']:
+                        print("Found msg! Adding reaction!")
+                        uni_emoji = emojize(f":{msg['name']}:", use_aliases=True)
+                        yield from self.add_reaction(m, uni_emoji)
