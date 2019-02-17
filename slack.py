@@ -40,7 +40,7 @@ class SlackBot:
         threading.Thread(target=self.channel_listener, args=(k,)).start()
 
 
-    def handle_message(self, message):
+    def handle_message(self, message, channel):
       sender = message.get('username', message['user'])
       if 'reactions' in message:
           for reaction in message['reactions']:
@@ -86,7 +86,7 @@ class SlackBot:
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:
-            self.handle_message(message)
+            self.handle_message(message, channel)
         else:
           #print("No new messages detected")
           continue
