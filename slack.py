@@ -52,7 +52,6 @@ class SlackBot:
             channel=channel,
           )
         if(len(ret['messages']) > 0):
-          print(ret)
           sorted_ret = sorted(ret['messages'], key=itemgetter('ts'))
           last_ts = sorted_ret[-1]['ts']
           for message in sorted_ret:

@@ -2,6 +2,7 @@ import discord
 import threading
 import asyncio
 import json
+import time
 
 class DiscordClient(discord.Client):
 
@@ -36,8 +37,8 @@ class DiscordClient(discord.Client):
             msg = self.from_slack.get(block=True)
             # Check the message type
             if msg["type"] == "MSG":
-                print(f"Received from slack: {msg}")
-                #print(f"Available Chanels: {self.channels}")
+                print(f"Received from slack to {msg['channel']}: {msg['text']}")
+                print(f"Available Chanels: {self.channels.keys()}")
                 # Forward it to the discord server
                 yield from self.send_message(self.channels[msg["channel"]], f"{msg['sender']}: {msg['text']}")
             elif msg["type"] == "CONF":
@@ -45,6 +46,7 @@ class DiscordClient(discord.Client):
                 for ch_name in msg["channels"]:
                     yield from self.create_channel(self.server, ch_name)
                 # Store then channel mapping
-                #print(f"Discovered channels: {[c for c in self.get_all_channels()]}")
+                print(f"Discovered channels: {[c for c in self.get_all_channels()]}")
                 for ch in [c for c in self.get_all_channels()]:
                     self.channels[ch.name] = ch
+                time.sleep(5)
