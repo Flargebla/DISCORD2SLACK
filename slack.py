@@ -78,12 +78,6 @@ class SlackBot:
           'thread': message.get('thread', []),
           'img': message.get('image', "")
         }
-<<<<<<< HEAD
-=======
-        
-        if 'files' in message:
-          m['img'] = message['files'][0]['permalink_public']
->>>>>>> 7440b6b463af3d5498090835299b14c0c5bae696
 
         self.to_discord.put(m)
 
