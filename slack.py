@@ -26,6 +26,8 @@ class SlackBot:
 
         self._username = None;
 
+        self.parents = dict()
+
 
     def send_channels(self):
       channels = [v for k,v in self.channels.items()]
@@ -41,7 +43,7 @@ class SlackBot:
 
 
     def handle_message(self, message, channel):
-      sender = message.get('username', message['user'])
+      sender = message.get('username', self.userlist[message['user']])
       if 'reactions' in message:
           for reaction in message['reactions']:
             for user in reaction['users']:
@@ -49,12 +51,11 @@ class SlackBot:
               reaction['users'].remove(user)
               reaction['users'].append(rusername)
       
-      parents = {}
       if 'parent_user_id' not in message:
-        parents[message['ts']] = list({'sender': sender, 'message': message['text']})
+        self.parents[message['ts']] = [{'sender': sender, 'text': message['text']}]
       else:
-        message['thread'] = parents[message['thread_ts']]
-        parents[message['thread_ts']].append({'sender': sender, 'message': message['text']})
+        message['thread'] = [obj for obj in self.parents[message['thread_ts']]]
+        self.parents[message['thread_ts']].append({'sender': sender, 'text': message['text']})
 
       m = {
         'sender': sender,

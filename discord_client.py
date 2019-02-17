@@ -64,9 +64,13 @@ class DiscordClient(discord.Client):
                     if len(msg["thread"]) > 0:
                         # Add threads
                         i = 0
+                        msg_str = ""
                         for t in msg["thread"]:
-                            yield from self.send_message(self.channels[msg["channel"]], f"{'|  '*i}{t['text']} (**{t['sender']}**)")
+                            msg_str += f"{'|  '*i}{t['text']} ({t['sender']})\n"
                             i += 1
+                        msg_str += f"{'| '*i}{msg['text']} ({msg['sender']})"
+                        msg_str = f"```{msg_str}```"
+                        yield from self.send_message(self.channels[msg["channel"]], msg_str)
                     else:
                         yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
                         m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
