@@ -27,16 +27,16 @@ class DiscordClient(discord.Client):
             return
         print(f"Message received from discord: {message.content}")
         # Check for img
-        print(f"Message embed: {message.embeds}")
-        print(f"Message attachment: {message.attachments}")
-        print(f"Message content: {message.content}")
+        img_link = ""
+        if len(message.attachments) > 0:
+            img_link = message.attachments[0]["url"]
         # Send the message to the Slack
         self.to_slack.put({
             "type": "MSG",
             "sender": "ConnorZapfel",
             "channel": str(message.channel),
             "text": message.content,
-            "img": message.attachments[0]["url"]
+            "img": img_link
         })
 
     @asyncio.coroutine
