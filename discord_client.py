@@ -4,6 +4,8 @@ import asyncio
 import json
 import time
 import copy
+import requests
+import random
 from emoji import emojize, demojize
 
 class DiscordClient(discord.Client):
@@ -24,12 +26,17 @@ class DiscordClient(discord.Client):
         if message.author == self.user:
             return
         print(f"Message received from discord: {message.content}")
+        # Check for img
+        img_link = ""
+        if len(message.attachments) > 0:
+            img_link = message.attachments[0]["url"]
         # Send the message to the Slack
         self.to_slack.put({
             "type": "MSG",
             "sender": "ConnorZapfel",
             "channel": str(message.channel),
-            "text": message.content
+            "text": message.content,
+            "img": img_link
         })
 
     @asyncio.coroutine
@@ -73,8 +80,8 @@ class DiscordClient(discord.Client):
                 print(f"Available Channels: {self.channels.keys()}")
                 # Forward it to the discord server
                 if msg["channel"] in self.channels.keys() and msg['text'] != "":
+                    # Check if msg is part of a thread
                     if len(msg["thread"]) > 0:
-                        # Add threads
                         i = 0
                         msg_str = ""
                         for t in msg["thread"]:
@@ -83,16 +90,22 @@ class DiscordClient(discord.Client):
                         msg_str += f"{'| '*i}{msg['text']} ({msg['sender']})"
                         msg_str = f"```{msg_str}```"
                         yield from self.send_message(self.channels[msg["channel"]], msg_str)
+                    # Otherwise its just a normal message
                     else:
+                        # Check for img
+                        if len(message.attachments) > 0:
+                            # Grab the remote image
+                            rint = str(random.randint(0,9999999))
+                            r = requests.get(msg["img"])
+                            if r.status_code == 200:
+                                with open(f"{rint}.jpg", "wb") as f:
+                                    for c in r.iter_content(1024):
+                                        f.write(c)
+                            yield from self.send_file(msg["channel"], f"{rint}.jpg")
+                            yield from asyncio.sleep(1)
                         yield from self.send_message(self.channels[msg["channel"]], f"**{msg['sender']}**")
                         yield from asyncio.sleep(1)
                         m = yield from self.send_message(self.channels[msg["channel"]], f"{msg['text']}")
-                        # Add reactions
-                        #for r in msg['reactions']:
-                        #    for i in range(r['count']):
-                        #        uni_emoji = emojize(f":{r['name']}:", use_aliases=True)
-                        #        print(f"Adding reaction: {uni_emoji}")
-                        #        yield from self.add_reaction(m, uni_emoji)
                 else:
                     print(f"ERROR - Channel \"{msg['channel']}\" not found")
             elif msg["type"] == "CONF":
